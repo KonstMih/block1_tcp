@@ -27,7 +27,7 @@ func main() {
 	}
 	defer conn_kettle.Close()
 
-	f, err := os.OpenFile("data.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile("/home/asutp/data.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -52,10 +52,10 @@ func main() {
 
 			buff := make([]byte, 100)
 
-			t := time.NewTimer(130 * time.Millisecond)
+			t := time.NewTimer(150 * time.Millisecond)
 			<-t.C
 
-			conn_kettle.SetReadDeadline(time.Now().Add(time.Millisecond * 130))
+			conn_kettle.SetReadDeadline(time.Now().Add(time.Millisecond * 150))
 
 			_, err := conn_kettle.Read(buff)
 			if err != nil {
@@ -85,7 +85,7 @@ func main() {
 
 			}
 
-			fmt.Println(mass_temp) // убрать при окончании настройки
+			//fmt.Println(mass_temp) // убрать при окончании настройки
 
 			for j := 0; j < int(i.Qan_chanels); j++ {
 				if mass_temp[j] == float32(math.Inf(1)) {
@@ -106,10 +106,10 @@ func main() {
 
 			buff := make([]byte, 100)
 
-			t := time.NewTimer(130 * time.Millisecond)
+			t := time.NewTimer(150 * time.Millisecond)
 			<-t.C
 
-			conn_turbo.SetReadDeadline(time.Now().Add(time.Millisecond * 130))
+			conn_turbo.SetReadDeadline(time.Now().Add(time.Millisecond * 150))
 
 			_, err := conn_turbo.Read(buff)
 			if err != nil {
@@ -139,7 +139,7 @@ func main() {
 
 			}
 
-		//	fmt.Println(mass_temp) // убрать при окончании настройки
+		  //fmt.Println(mass_temp) // убрать при окончании настройки
 
 			for j := 0; j < int(i.Qan_chanels); j++ {
 				if mass_temp[j] == float32(math.Inf(1)) {
