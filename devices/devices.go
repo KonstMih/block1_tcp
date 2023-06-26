@@ -33,7 +33,15 @@ var k1_8 = []string{"t_kontensat_sbor", "t_kontensat_vihkollect", "t_vod_kollect
 
 var k1_9 = []string{"t_vozdh_pered_rvpa", "t_vozdh_pered_rvpb", "t_vozdh_pered_tvpslev", "t_vozdh_pered_tvpsprav"}
 
+var k1_10 = []string{"h_baraban_slev"}
+
+var k1_11 = []string{"h_baraban_sprav"}
+
 // ============================================================================Турбина 1============================================================================
+
+var t1_8 =[]string{"p_par_k_psg1"}
+
+var t1_9 =[]string{"p_par_k_psg2"}
 
 var t1_1 = []string{"p_par_do_sk"}
 
@@ -59,6 +67,10 @@ var irt_1 = new_device(1, "irt5920n", 1, []byte{0xFF, 0x3A, 0x31, 0x3B, 0x31, 0x
 var irt_2 = new_device(2, "irt5920n", 1, []byte{0xFF, 0x3A, 0x32, 0x3B, 0x31, 0x3B, 0x30, 0x3B, 0x31, 0x31, 0x39, 0x37, 0x39, 0x0D}, k1_2) // панель:17-1N  котёл:1
 
 var irt_3 = new_device(3, "irt5920n", 1, []byte{0xFF, 0x3A, 0x33, 0x3B, 0x31, 0x3B, 0x30, 0x3B, 0x36, 0x35, 0x34, 0x38, 0x32, 0x0D}, k1_3) // панель:1-1N  котёл:1
+
+var irt_7 = new_device(1, "irt5920n", 1, []byte{0xFF, 0x3A, 0x31, 0x3B, 0x31, 0x3B, 0x30, 0x3B, 0x37, 0x36, 0x32, 0x37, 0x0D}, t1_8)  // панель: 3-1S турбина 1
+
+var irt_8 = new_device(2, "irt5920n", 1, []byte{0xFF, 0x3A, 0x32, 0x3B, 0x31, 0x3B, 0x30, 0x3B, 0x31, 0x31, 0x39, 0x37, 0x39, 0x0D}, t1_9)  // панель: 3-1S турбина 1
 
 var irt_4 = new_device(3, "irt5920n", 1, []byte{0xFF, 0x3A, 0x33, 0x3B, 0x31, 0x3B, 0x30, 0x3B, 0x36, 0x35, 0x34, 0x38, 0x32, 0x0D}, t1_1) // панель:3-1S  турбина:1
 
@@ -92,8 +104,14 @@ var trm_5 = new_device(16, "trm138", 5, []byte{0x10, 0x04, 0x00, 0x00, 0x00, 0x1
 
 var trm_6 = new_device(24, "trm138", 7, []byte{0x18, 0x04, 0x00, 0x00, 0x00, 0x23, 0xb3, 0xda}, t1_7) // панель:3A-1S  турбина:1
 
+// ========================================================================КП1М================================================================================
+
+var kp_1 = new_device(25, "kp1m", 1, []byte{0x3A, 0x31, 0x39, 0x30, 0x34, 0x30, 0x30, 0x30, 0x42, 0x30, 0x30, 0x30, 0x32, 0x44, 0x36, 0x0D, 0x0A}, k1_10) // панель:2-1N  котёл:1
+
+var kp_2 = new_device(26, "kp1m", 1, []byte{0x3A, 0x31, 0x41, 0x30, 0x34, 0x30, 0x30, 0x30, 0x42, 0x30, 0x30, 0x30, 0x32, 0x44, 0x35, 0x0D, 0x0A}, k1_11) // панель:3-1N  котёл:1
+
 // ========================================================================================================================================================
 
-var Devices_kettle = []Device{irt_1, irt_2, irt_3, f_1, f_2, tm_1, trm_1, trm_2, trm_3}
+var Devices_kettle = []Device{irt_1, irt_2, irt_3, f_1, f_2, tm_1, trm_1, trm_2, trm_3, kp_1, kp_2}
 
-var Devices_turbo = []Device{irt_4, irt_5, irt_6, f_3, trm_4, trm_5, trm_6}
+var Devices_turbo = []Device{irt_4, irt_5, irt_6, irt_7, irt_8, f_3, trm_4, trm_5, trm_6}
