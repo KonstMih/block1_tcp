@@ -27,14 +27,20 @@ func main() {
 	}
 	defer conn_kettle.Close()
 
-	f, err := os.OpenFile("/home/engineer/data.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	data_file, err := os.OpenFile("/home/engineer/data.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	defer f.Close()
+	defer data_file.Close()
 
+
+	var key_week bool = false;
+
+	
 	for {
+
+		key_week = check_DayWeek(key_week)
 
 		var data = make(map[string]interface{})
 
@@ -156,7 +162,38 @@ func main() {
 
 		data_js, _ := json.Marshal(data)
 
-		f.WriteString(string(data_js) + "\n")
+		data_file.WriteString(string(data_js) + "\n")
+
+	}
+
+	
+	func check_DayWeek(key_week bool) bool {
+
+		weekday := time.Now().Weekday()
+
+		if (int(weekday) == 6) {
+
+			if key_week == true {
+				_, week := today.ISOWeek()
+				weekStr := strconv.Itoa(week)
+
+				new, err := os.Create("/home/engineer/arhiv/" + weekStr + ".json")
+    			if err != nil {
+        			fmt.Println(err)
+                }
+                defer new.Close()
+
+
+                bytesWritten, err := io.Copy(new, data_file)
+                if err != nil {
+                    fmt.Println(err)
+			    }
+
+			    key_week = false
+			
+		} else {
+			key_week = true
+		}
 
 	}
 
