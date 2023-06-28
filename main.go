@@ -9,6 +9,8 @@ import (
 	"net"
 	"os"
 	"time"
+	"strconv"
+	"io"
 )
 
 func main() {
@@ -27,174 +29,188 @@ func main() {
 	}
 	defer conn_kettle.Close()
 
-	data_file, err := os.OpenFile("/home/engineer/data.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	defer data_file.Close()
-
-
 	var key_week bool = false;
 
 	
 	for {
 
-		key_week = check_DayWeek(key_week)
-
-		var data = make(map[string]interface{})
-
-		t, d := modbus.Today()
-
-		data["Time"] = t
-		data["Day"] = d
-
-		for _, i := range devices.Devices_kettle {
-
-			if _, err = conn_kettle.Write(i.Request); err != nil {
-				fmt.Println(err)
-				return
-			}
-
-			buff := make([]byte, 100)
-
-			t := time.NewTimer(120 * time.Millisecond)
-			<-t.C
-
-			conn_kettle.SetReadDeadline(time.Now().Add(time.Millisecond * 120))
-
-			_, err := conn_kettle.Read(buff)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-
-			var temp []byte
-			var mass_temp []float32
-
-			switch i.Name {
-			case ("tm5104d"):
-				temp = modbus.Rtu_data_tm5104d(buff, i.Qan_chanels)
-				mass_temp = modbus.Rtu_temp(temp)
-
-			case ("trm138"):
-				temp = modbus.Rtu_data_trm138(buff, i.Qan_chanels)
-				mass_temp = modbus.Rtu_temp(temp)
-
-			case ("irt5920n"):
-				temp = modbus.Ascii_data_itr5920n(buff, i.Id)
-				mass_temp = modbus.Ascii_temp(temp)
-
-			case ("f1772"):
-				temp = modbus.Rtu_data_f1772(buff, i.Qan_chanels)
-				mass_temp = modbus.Rtu_temp(temp)
-
-			case ("kp1m"):
-				temp = modbus.Rtu_data_kp1m(buff)
-				mass_temp = modbus.RtuAscii_temp(temp)
-			}
-
-			fmt.Println(mass_temp) // убрать при окончании настройки
-
-			for j := 0; j < int(i.Qan_chanels); j++ {
-				if mass_temp[j] == float32(math.Inf(1)) {
-					data[i.Chanels[j]] = "Обрыв"
-					continue
-				}
-				data[i.Chanels[j]] = mass_temp[j]
-			}
-
+		data_file, err := os.OpenFile("/home/asutp/code/goprogect/block1_tcp/data.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			fmt.Println(err)
 		}
+		defer data_file.Close()
 
-		for _, i := range devices.Devices_turbo {
+		today := time.Now()
+	    //weekday := today.Weekday()
 
-			if _, err = conn_turbo.Write(i.Request); err != nil {
-				fmt.Println(err)
-				return
-			}
-
-			buff := make([]byte, 100)
-
-			t := time.NewTimer(120 * time.Millisecond)
-			<-t.C
-
-			conn_turbo.SetReadDeadline(time.Now().Add(time.Millisecond * 120))
-
-			_, err := conn_turbo.Read(buff)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-
-			var temp []byte
-			var mass_temp []float32
-
-			switch i.Name {
-			case ("tm5104d"):
-				temp = modbus.Rtu_data_tm5104d(buff, i.Qan_chanels)
-				mass_temp = modbus.Rtu_temp(temp)
-
-			case ("trm138"):
-				temp = modbus.Rtu_data_trm138(buff, i.Qan_chanels)
-				mass_temp = modbus.Rtu_temp(temp)
-
-			case ("irt5920n"):
-				temp = modbus.Ascii_data_itr5920n(buff, i.Id)
-				mass_temp = modbus.Ascii_temp(temp)
-
-			case ("f1772"):
-				temp = modbus.Rtu_data_f1772(buff, i.Qan_chanels)
-				mass_temp = modbus.Rtu_temp(temp)
-
-			}
-
-		  fmt.Println(mass_temp) // убрать при окончании настройки
-
-			for j := 0; j < int(i.Qan_chanels); j++ {
-				if mass_temp[j] == float32(math.Inf(1)) {
-					data[i.Chanels[j]] = "Обрыв"
-					continue
-				}
-				data[i.Chanels[j]] = mass_temp[j]
-			}
-
-		}
-
-		data_js, _ := json.Marshal(data)
-
-		data_file.WriteString(string(data_js) + "\n")
-
-	}
-
-	
-	func check_DayWeek(key_week bool) bool {
-
-		weekday := time.Now().Weekday()
-
-		if (int(weekday) == 6) {
+	    //if (int(weekday) == 6) {
+	    if (int(today.Minute()) == 13) {
 
 			if key_week == true {
 				_, week := today.ISOWeek()
 				weekStr := strconv.Itoa(week)
 
-				new, err := os.Create("/home/engineer/arhiv/" + weekStr + ".json")
-    			if err != nil {
-        			fmt.Println(err)
-                }
-                defer new.Close()
+				new, err := os.Create("/home/asutp/code/goprogect/block1_tcp/" + weekStr + ".json")
+	    		if err != nil {
+	        		fmt.Println(err)
+	            }
+	            defer new.Close()
 
 
-                bytesWritten, err := io.Copy(new, data_file)
-                if err != nil {
-                    fmt.Println(err)
-			    }
+	            bytesCopy, err := io.Copy(new, data_file)
+	            	            if err != nil {
+	                fmt.Println(err)
+				}
 
-			    key_week = false
+				fmt.Printf("Bytes Written: %d\n", bytesCopy)
+
+				os.Remove("/home/asutp/code/goprogect/block1_tcp/data.json")
+
+				data_file, err := os.OpenFile("/home/asutp/code/goprogect/block1_tcp/data.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+				if err != nil {
+			        fmt.Println(err)
+		        }
+		        defer data_file.Close()
+
+				key_week = false
 			
-		} else {
-			key_week = true
-		}
+		    }   
+		} else {key_week = true}
+
+	    for {
+
+			var data = make(map[string]interface{})
+
+			t, d := modbus.Today()
+
+			data["Time"] = t
+			data["Day"] = d
+
+			for _, i := range devices.Devices_kettle {
+
+				if _, err = conn_kettle.Write(i.Request); err != nil {
+					fmt.Println(err)
+					return
+				}
+
+				buff := make([]byte, 100)
+
+				t := time.NewTimer(120 * time.Millisecond)
+				<-t.C
+
+				conn_kettle.SetReadDeadline(time.Now().Add(time.Millisecond * 120))
+
+				_, err := conn_kettle.Read(buff)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+
+				var temp []byte
+				var mass_temp []float32
+
+				switch i.Name {
+				case ("tm5104d"):
+					temp = modbus.Rtu_data_tm5104d(buff, i.Qan_chanels)
+					mass_temp = modbus.Rtu_temp(temp)
+
+				case ("trm138"):
+					temp = modbus.Rtu_data_trm138(buff, i.Qan_chanels)
+					mass_temp = modbus.Rtu_temp(temp)
+
+				case ("irt5920n"):
+					temp = modbus.Ascii_data_itr5920n(buff, i.Id)
+					mass_temp = modbus.Ascii_temp(temp)
+
+				case ("f1772"):
+					temp = modbus.Rtu_data_f1772(buff, i.Qan_chanels)
+					mass_temp = modbus.Rtu_temp(temp)
+
+				case ("kp1m"):
+					temp = modbus.Rtu_data_kp1m(buff)
+					mass_temp = modbus.RtuAscii_temp(temp)
+				}
+
+				fmt.Println(mass_temp) // убрать при окончании настройки
+
+				for j := 0; j < int(i.Qan_chanels); j++ {
+					if mass_temp[j] == float32(math.Inf(1)) {
+						data[i.Chanels[j]] = "Обрыв"
+						continue
+					}
+					data[i.Chanels[j]] = mass_temp[j]
+				}
+
+			}
+
+			for _, i := range devices.Devices_turbo {
+
+				if _, err = conn_turbo.Write(i.Request); err != nil {
+					fmt.Println(err)
+					return
+				}
+
+				buff := make([]byte, 100)
+
+				t := time.NewTimer(120 * time.Millisecond)
+				<-t.C
+
+				conn_turbo.SetReadDeadline(time.Now().Add(time.Millisecond * 120))
+
+				_, err := conn_turbo.Read(buff)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+
+				var temp []byte
+				var mass_temp []float32
+
+				switch i.Name {
+				case ("tm5104d"):
+					temp = modbus.Rtu_data_tm5104d(buff, i.Qan_chanels)
+					mass_temp = modbus.Rtu_temp(temp)
+
+				case ("trm138"):
+					temp = modbus.Rtu_data_trm138(buff, i.Qan_chanels)
+					mass_temp = modbus.Rtu_temp(temp)
+
+				case ("irt5920n"):
+					temp = modbus.Ascii_data_itr5920n(buff, i.Id)
+					mass_temp = modbus.Ascii_temp(temp)
+
+				case ("f1772"):
+					temp = modbus.Rtu_data_f1772(buff, i.Qan_chanels)
+					mass_temp = modbus.Rtu_temp(temp)
+
+				}
+
+			  fmt.Println(mass_temp) // убрать при окончании настройки
+
+				for j := 0; j < int(i.Qan_chanels); j++ {
+					if mass_temp[j] == float32(math.Inf(1)) {
+						data[i.Chanels[j]] = "Обрыв"
+						continue
+					}
+					data[i.Chanels[j]] = mass_temp[j]
+				}
+
+			}
+
+			data_js, _ := json.Marshal(data)
+
+			data_file.WriteString(string(data_js) + "\n")
+
+            today := time.Now()
+	        //weekday := today.Weekday()
+
+	        //if (int(weekday) == 6) {
+	        if (int(today.Minute()) == 13) {
+	        	break
+	        }		
 
 	}
 
+    }
 }
+
