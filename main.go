@@ -41,26 +41,37 @@ func main() {
 		defer data_file.Close()
 
 		today := time.Now()
-	    //weekday := today.Weekday()
+	    weekday := today.Weekday()
 
-	    //if (int(weekday) == 6) {
-	    if (int(today.Minute()) == 13) {
+	    //int(today.Minute()) == 28 {
+	    if int(weekday) == 6 {
+
+	    	fmt.Println("Запсиь")
 
 			if key_week == true {
 				_, week := today.ISOWeek()
 				weekStr := strconv.Itoa(week)
 
+				data_file.Close()
+
 				new, err := os.Create("/home/asutp/code/goprogect/block1_tcp/" + weekStr + ".json")
 	    		if err != nil {
 	        		fmt.Println(err)
 	            }
-	            defer new.Close()
+	            
+	            original, err := os.Open("/home/asutp/code/goprogect/block1_tcp/data.json")
+                if err != nil {
+                    fmt.Println(err)
+                }
 
 
-	            bytesCopy, err := io.Copy(new, data_file)
-	            	            if err != nil {
+	            bytesCopy, err := io.Copy(new, original)
+	            if err != nil {
 	                fmt.Println(err)
 				}
+
+                new.Close()
+				original.Close()
 
 				fmt.Printf("Bytes Written: %d\n", bytesCopy)
 
@@ -131,7 +142,7 @@ func main() {
 					mass_temp = modbus.RtuAscii_temp(temp)
 				}
 
-				fmt.Println(mass_temp) // убрать при окончании настройки
+				//fmt.Println(mass_temp) // убрать при окончании настройки
 
 				for j := 0; j < int(i.Qan_chanels); j++ {
 					if mass_temp[j] == float32(math.Inf(1)) {
@@ -202,10 +213,10 @@ func main() {
 			data_file.WriteString(string(data_js) + "\n")
 
             today := time.Now()
-	        //weekday := today.Weekday()
+	        weekday := today.Weekday()
 
-	        //if (int(weekday) == 6) {
-	        if (int(today.Minute()) == 13) {
+	        //int(today.Minute()) == 28 {
+	        if int(weekday) == 6 {
 	        	break
 	        }		
 
